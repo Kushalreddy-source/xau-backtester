@@ -1,10 +1,60 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>XAUUSD Backtester</title>
+<link rel="stylesheet" href="style.css">
 </head>
+
 <body>
+
+<header>
 <h1>XAUUSD Backtester</h1>
-<p>Website is working.</p>
+</header>
+
+<div class="container">
+
+<div id="chart">
+Chart Loading...
+</div>
+
+<div class="controls">
+<button id="prevBtn">◀ Previous</button>
+<button id="nextBtn">Next ▶</button>
+<button id="longBtn">📈 Long</button>
+<button id="shortBtn">📉 Short</button>
+</div>
+
+<div class="stats">
+<h2>Replay Info</h2>
+<p>Current Candle:
+<span id="candleNumber">0</span>
+</p>
+</div>
+
+<div class="stats">
+<h2>Performance</h2>
+<p>Total Trades:
+<span id="totalTrades">0</span>
+</p>
+
+<p>Win Rate:
+<span id="winRate">0%</span>
+</p>
+
+<p>Best Day:
+<span id="bestDay">-</span>
+</p>
+
+<p>Worst Day:
+<span id="worstDay">-</span>
+</p>
+</div>
+
+</div>
+
+<script src="app.js"></script>
+
 </body>
 </html>
