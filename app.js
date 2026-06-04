@@ -14,20 +14,61 @@ const candles = [
 let currentCandle = 1;
 let replayTimer = null;
 let replaySpeed = 1000;
-
 let tradeMode = null;
 
 const trades = [];
 
-function updateStats() {
+function calculateStats() {
 
-  const totalTradesElement =
-    document.getElementById("totalTrades");
+  const wins =
+    trades.filter(t => t.result === "WIN").length;
 
-  if(totalTradesElement){
-    totalTradesElement.textContent =
-      trades.length;
+  const losses =
+    trades.filter(t => t.result === "LOSS").length;
+
+  const total =
+    trades.length;
+
+  let winRate = 0;
+
+  if(total > 0){
+    winRate =
+      ((wins / total) * 100).toFixed(1);
   }
+
+  document.getElementById(
+    "totalTrades"
+  ).textContent = total;
+
+  const winsElement =
+    document.getElementById("wins");
+
+  if(winsElement){
+    winsElement.textContent = wins;
+  }
+
+  const lossesElement =
+    document.getElementById("losses");
+
+  if(lossesElement){
+    lossesElement.textContent = losses;
+  }
+
+  document.getElementById(
+    "winRate"
+  ).textContent = winRate + "%";
+}
+
+function markTrade(index,result){
+
+  trades[index].result = result;
+
+  updateTradeLog();
+
+  calculateStats();
+}
+
+function updateTradeLog(){
 
   let tradeLog =
     document.getElementById("tradeLog");
@@ -55,20 +96,57 @@ function updateStats() {
   trades.forEach((trade,index)=>{
 
     const row =
-      document.createElement("p");
+      document.createElement("div");
 
-    row.textContent =
-      (index + 1) +
-      ". " +
-      trade.type.toUpperCase() +
-      " | Candle " +
-      trade.candle +
-      " | SL " +
-      trade.sl +
-      " | TP " +
-      trade.tp;
+    row.style.marginBottom =
+      "10px";
+
+    row.innerHTML =
+      `
+      <p>
+      ${index + 1}.
+      ${trade.type.toUpperCase()}
+      | Candle ${trade.candle}
+      | SL ${trade.sl}
+      | TP ${trade.tp}
+      | ${trade.result}
+      </p>
+      `;
+
+    if(trade.result === "OPEN"){
+
+      const winBtn =
+        document.createElement("button");
+
+      winBtn.textContent =
+        "WIN";
+
+      winBtn.onclick = function(){
+        markTrade(
+          index,
+          "WIN"
+        );
+      };
+
+      const lossBtn =
+        document.createElement("button");
+
+      lossBtn.textContent =
+        "LOSS";
+
+      lossBtn.onclick = function(){
+        markTrade(
+          index,
+          "LOSS"
+        );
+      };
+
+      row.appendChild(winBtn);
+      row.appendChild(lossBtn);
+    }
 
     tradeLog.appendChild(row);
+
   });
 
 }
@@ -89,10 +167,13 @@ function saveTrade(type,candleIndex){
     type:type,
     candle:candleIndex + 1,
     sl:sl,
-    tp:tp
+    tp:tp,
+    result:"OPEN"
   });
 
-  updateStats();
+  updateTradeLog();
+
+  calculateStats();
 
   alert("Trade Saved");
 }
@@ -165,22 +246,12 @@ function drawChart(){
     candle.onclick = function(){
 
       if(tradeMode === "long"){
-
-        saveTrade(
-          "long",
-          i
-        );
-
+        saveTrade("long",i);
         tradeMode = null;
       }
 
       if(tradeMode === "short"){
-
-        saveTrade(
-          "short",
-          i
-        );
-
+        saveTrade("short",i);
         tradeMode = null;
       }
 
@@ -199,9 +270,7 @@ function drawChart(){
 
 function startReplay(){
 
-  clearInterval(
-    replayTimer
-  );
+  clearInterval(replayTimer);
 
   replayTimer =
     setInterval(()=>{
@@ -214,7 +283,6 @@ function startReplay(){
         currentCandle >=
         candles.length
       ){
-
         clearInterval(
           replayTimer
         );
@@ -223,98 +291,63 @@ function startReplay(){
     },replaySpeed);
 }
 
-document.getElementById(
-  "playBtn"
-).onclick = startReplay;
+document.getElementById("playBtn").onclick =
+  startReplay;
 
-document.getElementById(
-  "pauseBtn"
-).onclick = function(){
+document.getElementById("pauseBtn").onclick =
+  () => clearInterval(replayTimer);
 
-  clearInterval(
-    replayTimer
-  );
+document.getElementById("nextBtn").onclick =
+  function(){
 
-};
+    if(currentCandle < candles.length){
+      currentCandle++;
+      drawChart();
+    }
 
-document.getElementById(
-  "nextBtn"
-).onclick = function(){
+  };
 
-  if(
-    currentCandle <
-    candles.length
-  ){
+document.getElementById("prevBtn").onclick =
+  function(){
 
-    currentCandle++;
+    if(currentCandle > 1){
+      currentCandle--;
+      drawChart();
+    }
 
-    drawChart();
-  }
+  };
 
-};
+document.getElementById("speed1Btn").onclick =
+  () => replaySpeed = 1000;
 
-document.getElementById(
-  "prevBtn"
-).onclick = function(){
+document.getElementById("speed2Btn").onclick =
+  () => replaySpeed = 500;
 
-  if(
-    currentCandle > 1
-  ){
+document.getElementById("speed5Btn").onclick =
+  () => replaySpeed = 200;
 
-    currentCandle--;
+document.getElementById("longBtn").onclick =
+  function(){
 
-    drawChart();
-  }
+    tradeMode = "long";
 
-};
+    alert(
+      "Tap a candle to place LONG"
+    );
 
-document.getElementById(
-  "speed1Btn"
-).onclick = function(){
+  };
 
-  replaySpeed = 1000;
+document.getElementById("shortBtn").onclick =
+  function(){
 
-};
+    tradeMode = "short";
 
-document.getElementById(
-  "speed2Btn"
-).onclick = function(){
+    alert(
+      "Tap a candle to place SHORT"
+    );
 
-  replaySpeed = 500;
-
-};
-
-document.getElementById(
-  "speed5Btn"
-).onclick = function(){
-
-  replaySpeed = 200;
-
-};
-
-document.getElementById(
-  "longBtn"
-).onclick = function(){
-
-  tradeMode = "long";
-
-  alert(
-    "Tap a candle to place LONG"
-  );
-
-};
-
-document.getElementById(
-  "shortBtn"
-).onclick = function(){
-
-  tradeMode = "short";
-
-  alert(
-    "Tap a candle to place SHORT"
-  );
-
-};
+  };
 
 drawChart();
-updateStats();
+calculateStats();
+updateTradeLog();
