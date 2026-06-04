@@ -5,16 +5,21 @@ const candles = [
   { open: 80, high: 100, low: 40, close: 50 },
   { open: 50, high: 120, low: 45, close: 100 },
   { open: 100, high: 110, low: 60, close: 70 },
-  { open: 70, high: 140, low: 50, close: 130 }
+  { open: 70, high: 140, low: 50, close: 130 },
+  { open: 130, high: 170, low: 100, close: 150 },
+  { open: 150, high: 180, low: 120, close: 140 },
+  { open: 140, high: 200, low: 130, close: 190 }
 ];
 
 let currentCandle = 1;
+let replayTimer = null;
 
 function drawChart() {
 
   chart.innerHTML = "";
 
   const wrapper = document.createElement("div");
+
   wrapper.style.display = "flex";
   wrapper.style.alignItems = "flex-end";
   wrapper.style.height = "100%";
@@ -26,11 +31,13 @@ function drawChart() {
     const c = candles[i];
 
     const container = document.createElement("div");
+
     container.style.position = "relative";
     container.style.width = "30px";
     container.style.height = "180px";
 
     const wick = document.createElement("div");
+
     wick.style.position = "absolute";
     wick.style.left = "13px";
     wick.style.bottom = "20px";
@@ -39,6 +46,7 @@ function drawChart() {
     wick.style.background = "white";
 
     const body = document.createElement("div");
+
     body.style.position = "absolute";
     body.style.left = "3px";
     body.style.width = "24px";
@@ -58,28 +66,75 @@ function drawChart() {
 
   chart.appendChild(wrapper);
 
-  document.getElementById("candleNumber").textContent =
-    currentCandle;
+  document.getElementById(
+    "candleNumber"
+  ).textContent = currentCandle;
 }
 
-document.getElementById("nextBtn")
-.addEventListener("click", () => {
+document.getElementById(
+  "nextBtn"
+).addEventListener(
+  "click",
+  () => {
 
-  if(currentCandle < candles.length){
-    currentCandle++;
-    drawChart();
+    if(currentCandle < candles.length){
+      currentCandle++;
+      drawChart();
+    }
+
   }
+);
 
-});
+document.getElementById(
+  "prevBtn"
+).addEventListener(
+  "click",
+  () => {
 
-document.getElementById("prevBtn")
-.addEventListener("click", () => {
+    if(currentCandle > 1){
+      currentCandle--;
+      drawChart();
+    }
 
-  if(currentCandle > 1){
-    currentCandle--;
-    drawChart();
   }
+);
 
-});
+document.getElementById(
+  "playBtn"
+).addEventListener(
+  "click",
+  () => {
+
+    clearInterval(replayTimer);
+
+    replayTimer = setInterval(() => {
+
+      if(currentCandle < candles.length){
+
+        currentCandle++;
+
+        drawChart();
+
+      } else {
+
+        clearInterval(replayTimer);
+
+      }
+
+    }, 1000);
+
+  }
+);
+
+document.getElementById(
+  "pauseBtn"
+).addEventListener(
+  "click",
+  () => {
+
+    clearInterval(replayTimer);
+
+  }
+);
 
 drawChart();
