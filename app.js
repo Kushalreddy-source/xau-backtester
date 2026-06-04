@@ -1,353 +1,398 @@
-const chart = document.getElementById("chart");
+const chartContainer = document.getElementById("chart");
 
-const candles = [
-  {open:100, high:130, low:90, close:120},
-  {open:120, high:140, low:100, close:110},
-  {open:110, high:160, low:105, close:150},
-  {open:150, high:170, low:130, close:140},
-  {open:140, high:190, low:135, close:180},
-  {open:180, high:210, low:170, close:200},
-  {open:200, high:220, low:180, close:190},
-  {open:190, high:240, low:185, close:230}
-];
+const chart = LightweightCharts.createChart(
+  chartContainer,
+  {
+    layout: {
+      background: {
+        color: "#0d1117"
+      },
+      textColor: "#d1d4dc"
+    },
 
-let currentCandle = 1;
+    grid: {
+      vertLines: {
+        color: "#1f2937"
+      },
+      horzLines: {
+        color: "#1f2937"
+      }
+    },
+
+    rightPriceScale: {
+      borderColor: "#374151"
+    },
+
+    timeScale: {
+      borderColor: "#374151"
+    },
+
+    width: chartContainer.clientWidth,
+    height: chartContainer.clientHeight
+  }
+);
+
+window.addEventListener("resize", () => {
+
+  chart.applyOptions({
+    width: chartContainer.clientWidth,
+    height: chartContainer.clientHeight
+  });
+
+});
+
+const candleSeries =
+  chart.addCandlestickSeries();
+
+const candles = [];
+
+let price = 3300;
+
+for(let i = 0; i < 500; i++){
+
+  const open = price;
+
+  const high =
+    open +
+    Math.random() * 15;
+
+  const low =
+    open -
+    Math.random() * 15;
+
+  const close =
+    low +
+    Math.random() *
+    (high - low);
+
+  candles.push({
+
+    time:
+      1710000000 +
+      i * 60,
+
+    open:
+      Number(open.toFixed(2)),
+
+    high:
+      Number(high.toFixed(2)),
+
+    low:
+      Number(low.toFixed(2)),
+
+    close:
+      Number(close.toFixed(2))
+  });
+
+  price = close;
+}
+
+let currentIndex = 30;
+
+candleSeries.setData(
+  candles.slice(
+    0,
+    currentIndex
+  )
+);
+
 let replayTimer = null;
+
 let replaySpeed = 1000;
+
 let tradeMode = null;
 
-const trades = [];
+let trades = [];
 
-function calculateStats() {
+let wins = 0;
 
-  const wins =
-    trades.filter(t => t.result === "WIN").length;
+let losses = 0;
 
-  const losses =
-    trades.filter(t => t.result === "LOSS").length;
-
-  const total =
-    trades.length;
-
-  let winRate = 0;
-
-  if(total > 0){
-    winRate =
-      ((wins / total) * 100).toFixed(1);
-  }
+function updateStats(){
 
   document.getElementById(
     "totalTrades"
-  ).textContent = total;
+  ).textContent =
+    trades.length;
 
-  const winsElement =
-    document.getElementById("wins");
+  document.getElementById(
+    "wins"
+  ).textContent =
+    wins;
 
-  if(winsElement){
-    winsElement.textContent = wins;
-  }
+  document.getElementById(
+    "losses"
+  ).textContent =
+    losses;
 
-  const lossesElement =
-    document.getElementById("losses");
+  let winRate = 0;
 
-  if(lossesElement){
-    lossesElement.textContent = losses;
+  if(trades.length > 0){
+
+    winRate =
+      (
+        wins /
+        trades.length
+      ) * 100;
   }
 
   document.getElementById(
     "winRate"
-  ).textContent = winRate + "%";
-}
-
-function markTrade(index,result){
-
-  trades[index].result = result;
-
-  updateTradeLog();
-
-  calculateStats();
-}
-
-function updateTradeLog(){
-
-  let tradeLog =
-    document.getElementById("tradeLog");
-
-  if(!tradeLog){
-
-    tradeLog =
-      document.createElement("div");
-
-    tradeLog.id = "tradeLog";
-
-    tradeLog.style.marginTop = "20px";
-    tradeLog.style.padding = "10px";
-    tradeLog.style.border =
-      "1px solid #555";
-
-    document
-      .querySelector(".container")
-      .appendChild(tradeLog);
-  }
-
-  tradeLog.innerHTML =
-    "<h2>Trade Log</h2>";
-
-  trades.forEach((trade,index)=>{
-
-    const row =
-      document.createElement("div");
-
-    row.style.marginBottom =
-      "10px";
-
-    row.innerHTML =
-      `
-      <p>
-      ${index + 1}.
-      ${trade.type.toUpperCase()}
-      | Candle ${trade.candle}
-      | SL ${trade.sl}
-      | TP ${trade.tp}
-      | ${trade.result}
-      </p>
-      `;
-
-    if(trade.result === "OPEN"){
-
-      const winBtn =
-        document.createElement("button");
-
-      winBtn.textContent =
-        "WIN";
-
-      winBtn.onclick = function(){
-        markTrade(
-          index,
-          "WIN"
-        );
-      };
-
-      const lossBtn =
-        document.createElement("button");
-
-      lossBtn.textContent =
-        "LOSS";
-
-      lossBtn.onclick = function(){
-        markTrade(
-          index,
-          "LOSS"
-        );
-      };
-
-      row.appendChild(winBtn);
-      row.appendChild(lossBtn);
-    }
-
-    tradeLog.appendChild(row);
-
-  });
-
-}
-
-function saveTrade(type,candleIndex){
-
-  const sl =
-    prompt("Enter Stop Loss");
-
-  if(sl === null) return;
-
-  const tp =
-    prompt("Enter Take Profit");
-
-  if(tp === null) return;
-
-  trades.push({
-    type:type,
-    candle:candleIndex + 1,
-    sl:sl,
-    tp:tp,
-    result:"OPEN"
-  });
-
-  updateTradeLog();
-
-  calculateStats();
-
-  alert("Trade Saved");
-}
-
-function drawChart(){
-
-  chart.innerHTML = "";
-
-  const wrapper =
-    document.createElement("div");
-
-  wrapper.style.display = "flex";
-  wrapper.style.alignItems = "flex-end";
-  wrapper.style.height = "100%";
-  wrapper.style.padding = "20px";
-  wrapper.style.gap = "12px";
-  wrapper.style.overflowX = "auto";
-
-  for(let i=0;i<currentCandle;i++){
-
-    const c = candles[i];
-
-    const candle =
-      document.createElement("div");
-
-    candle.style.position =
-      "relative";
-
-    candle.style.width =
-      "24px";
-
-    candle.style.height =
-      "180px";
-
-    candle.style.cursor =
-      "pointer";
-
-    const wick =
-      document.createElement("div");
-
-    wick.style.position =
-      "absolute";
-
-    wick.style.left = "10px";
-    wick.style.bottom = "20px";
-    wick.style.width = "3px";
-    wick.style.height = "120px";
-    wick.style.background =
-      "white";
-
-    const body =
-      document.createElement("div");
-
-    body.style.position =
-      "absolute";
-
-    body.style.left = "2px";
-    body.style.bottom = "55px";
-    body.style.width = "20px";
-    body.style.height = "50px";
-
-    body.style.background =
-      c.close > c.open
-      ? "limegreen"
-      : "red";
-
-    candle.appendChild(wick);
-    candle.appendChild(body);
-
-    candle.onclick = function(){
-
-      if(tradeMode === "long"){
-        saveTrade("long",i);
-        tradeMode = null;
-      }
-
-      if(tradeMode === "short"){
-        saveTrade("short",i);
-        tradeMode = null;
-      }
-
-    };
-
-    wrapper.appendChild(candle);
-  }
-
-  chart.appendChild(wrapper);
+  ).textContent =
+    winRate.toFixed(1) + "%";
 
   document.getElementById(
     "candleNumber"
   ).textContent =
-    currentCandle;
+    currentIndex;
 }
 
-function startReplay(){
+function redrawChart(){
 
-  clearInterval(replayTimer);
+  candleSeries.setData(
+    candles.slice(
+      0,
+      currentIndex
+    )
+  );
+
+  updateStats();
+}
+
+function playReplay(){
+
+  clearInterval(
+    replayTimer
+  );
 
   replayTimer =
     setInterval(()=>{
 
-      currentCandle++;
-
-      drawChart();
-
       if(
-        currentCandle >=
+        currentIndex <
         candles.length
       ){
+
+        currentIndex++;
+
+        redrawChart();
+
+      }else{
+
         clearInterval(
           replayTimer
         );
       }
 
-    },replaySpeed);
+    }, replaySpeed);
 }
 
-document.getElementById("playBtn").onclick =
-  startReplay;
+function stopReplay(){
 
-document.getElementById("pauseBtn").onclick =
-  () => clearInterval(replayTimer);
+  clearInterval(
+    replayTimer
+  );
+}
 
-document.getElementById("nextBtn").onclick =
-  function(){
+document.getElementById(
+  "playBtn"
+).onclick =
+  playReplay;
 
-    if(currentCandle < candles.length){
-      currentCandle++;
-      drawChart();
-    }
+document.getElementById(
+  "pauseBtn"
+).onclick =
+  stopReplay;
 
-  };
-
-document.getElementById("prevBtn").onclick =
-  function(){
-
-    if(currentCandle > 1){
-      currentCandle--;
-      drawChart();
-    }
-
-  };
-
-document.getElementById("speed1Btn").onclick =
+document.getElementById(
+  "speed1Btn"
+).onclick =
   () => replaySpeed = 1000;
 
-document.getElementById("speed2Btn").onclick =
+document.getElementById(
+  "speed2Btn"
+).onclick =
   () => replaySpeed = 500;
 
-document.getElementById("speed5Btn").onclick =
+document.getElementById(
+  "speed5Btn"
+).onclick =
   () => replaySpeed = 200;
 
-document.getElementById("longBtn").onclick =
-  function(){
+document.getElementById(
+  "speed10Btn"
+).onclick =
+  () => replaySpeed = 100;
 
-    tradeMode = "long";
+document.getElementById(
+  "speed15Btn"
+).onclick =
+  () => replaySpeed = 60;
 
-    alert(
-      "Tap a candle to place LONG"
-    );
+document.getElementById(
+  "longBtn"
+).onclick =
+  () => {
 
+    tradeMode = "LONG";
+
+    document.getElementById(
+      "statusText"
+    ).textContent =
+      "Select candle for LONG";
   };
 
-document.getElementById("shortBtn").onclick =
-  function(){
+document.getElementById(
+  "shortBtn"
+).onclick =
+  () => {
 
-    tradeMode = "short";
+    tradeMode = "SHORT";
 
-    alert(
-      "Tap a candle to place SHORT"
-    );
-
+    document.getElementById(
+      "statusText"
+    ).textContent =
+      "Select candle for SHORT";
   };
 
-drawChart();
-calculateStats();
-updateTradeLog();
+chart.subscribeClick(
+  function(param){
+
+    if(
+      !param.time
+    ) return;
+
+    if(
+      !tradeMode
+    ) return;
+
+    const sl =
+      prompt(
+        "Enter Stop Loss"
+      );
+
+    if(sl === null)
+      return;
+
+    const tp =
+      prompt(
+        "Enter Take Profit"
+      );
+
+    if(tp === null)
+      return;
+
+    const trade = {
+
+      type:
+        tradeMode,
+
+      candle:
+        currentIndex,
+
+      sl:
+        sl,
+
+      tp:
+        tp,
+
+      result:
+        "OPEN"
+    };
+
+    trades.push(
+      trade
+    );
+
+    addTradeToLog(
+      trade
+    );
+
+    tradeMode = null;
+
+    document.getElementById(
+      "statusText"
+    ).textContent =
+      "Trade Saved";
+
+    updateStats();
+  }
+);
+
+function addTradeToLog(
+  trade
+){
+
+  const log =
+    document.getElementById(
+      "tradeLog"
+    );
+
+  const row =
+    document.createElement(
+      "div"
+    );
+
+  row.className =
+    "tradeRow open";
+
+  row.innerHTML =
+    `
+    <b>${trade.type}</b>
+    | Candle ${trade.candle}
+    | SL ${trade.sl}
+    | TP ${trade.tp}
+    <br><br>
+    <button class="winBtn">
+    WIN
+    </button>
+
+    <button class="lossBtn">
+    LOSS
+    </button>
+    `;
+
+  const winBtn =
+    row.querySelector(
+      ".winBtn"
+    );
+
+  const lossBtn =
+    row.querySelector(
+      ".lossBtn"
+    );
+
+  winBtn.onclick =
+    () => {
+
+      wins++;
+
+      trade.result =
+        "WIN";
+
+      row.className =
+        "tradeRow win";
+
+      updateStats();
+    };
+
+  lossBtn.onclick =
+    () => {
+
+      losses++;
+
+      trade.result =
+        "LOSS";
+
+      row.className =
+        "tradeRow loss";
+
+      updateStats();
+    };
+
+  log.appendChild(
+    row
+  );
+}
+
+updateStats();
