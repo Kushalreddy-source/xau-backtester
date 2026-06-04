@@ -1,10 +1,23 @@
 const chart = document.getElementById("chart");
 
+const candles = [
+  {open:100, high:130, low:90, close:120},
+  {open:120, high:140, low:100, close:110},
+  {open:110, high:160, low:105, close:150},
+  {open:150, high:170, low:130, close:140},
+  {open:140, high:190, low:135, close:180},
+  {open:180, high:210, low:170, close:200},
+  {open:200, high:220, low:180, close:190},
+  {open:190, high:240, low:185, close:230}
+];
+
 let currentCandle = 1;
 let replayTimer = null;
 let replaySpeed = 1000;
 
-function drawChart() {
+let tradeMode = null;
+
+function drawChart(){
 
   chart.innerHTML = "";
 
@@ -14,22 +27,22 @@ function drawChart() {
   wrapper.style.alignItems = "flex-end";
   wrapper.style.height = "100%";
   wrapper.style.padding = "20px";
-  wrapper.style.gap = "10px";
+  wrapper.style.gap = "12px";
   wrapper.style.overflowX = "auto";
 
-  for(let i = 0; i < currentCandle; i++) {
+  for(let i=0;i<currentCandle;i++){
 
-    const candleContainer =
+    const c = candles[i];
+
+    const candle =
       document.createElement("div");
 
-    candleContainer.style.position =
-      "relative";
+    candle.style.position = "relative";
+    candle.style.width = "24px";
+    candle.style.height = "180px";
+    candle.style.cursor = "pointer";
 
-    candleContainer.style.width =
-      "24px";
-
-    candleContainer.style.height =
-      "180px";
+    candle.dataset.index = i;
 
     const wick =
       document.createElement("div");
@@ -48,18 +61,35 @@ function drawChart() {
     body.style.left = "2px";
     body.style.bottom = "55px";
     body.style.width = "20px";
-    body.style.height =
-      (40 + (i % 5) * 10) + "px";
+    body.style.height = "50px";
 
     body.style.background =
-      i % 2 === 0
+      c.close > c.open
       ? "limegreen"
       : "red";
 
-    candleContainer.appendChild(wick);
-    candleContainer.appendChild(body);
+    candle.appendChild(wick);
+    candle.appendChild(body);
 
-    wrapper.appendChild(candleContainer);
+    candle.onclick = function(){
+
+      if(tradeMode === "long"){
+        alert(
+          "LONG selected on candle "
+          + (i + 1)
+        );
+      }
+
+      if(tradeMode === "short"){
+        alert(
+          "SHORT selected on candle "
+          + (i + 1)
+        );
+      }
+
+    };
+
+    wrapper.appendChild(candle);
   }
 
   chart.appendChild(wrapper);
@@ -69,17 +99,17 @@ function drawChart() {
   ).textContent = currentCandle;
 }
 
-function startReplay() {
+function startReplay(){
 
   clearInterval(replayTimer);
 
-  replayTimer = setInterval(() => {
+  replayTimer = setInterval(()=>{
 
     currentCandle++;
 
     drawChart();
 
-    if(currentCandle >= 50) {
+    if(currentCandle >= candles.length){
       clearInterval(replayTimer);
     }
 
@@ -88,57 +118,75 @@ function startReplay() {
 
 document.getElementById(
   "playBtn"
-).onclick = () => {
-  startReplay();
-};
+).onclick = startReplay;
 
 document.getElementById(
   "pauseBtn"
-).onclick = () => {
+).onclick = function(){
   clearInterval(replayTimer);
 };
 
 document.getElementById(
   "nextBtn"
-).onclick = () => {
+).onclick = function(){
 
-  currentCandle++;
+  if(currentCandle < candles.length){
+    currentCandle++;
+    drawChart();
+  }
 
-  drawChart();
 };
 
 document.getElementById(
   "prevBtn"
-).onclick = () => {
+).onclick = function(){
 
   if(currentCandle > 1){
     currentCandle--;
+    drawChart();
   }
 
-  drawChart();
 };
 
 document.getElementById(
   "speed1Btn"
-).onclick = () => {
-
+).onclick = function(){
   replaySpeed = 1000;
-
 };
 
 document.getElementById(
   "speed2Btn"
-).onclick = () => {
-
+).onclick = function(){
   replaySpeed = 500;
-
 };
 
 document.getElementById(
   "speed5Btn"
-).onclick = () => {
-
+).onclick = function(){
   replaySpeed = 200;
+};
+
+document.getElementById(
+  "longBtn"
+).onclick = function(){
+
+  tradeMode = "long";
+
+  alert(
+    "Tap a candle to place LONG"
+  );
+
+};
+
+document.getElementById(
+  "shortBtn"
+).onclick = function(){
+
+  tradeMode = "short";
+
+  alert(
+    "Tap a candle to place SHORT"
+  );
 
 };
 
