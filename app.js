@@ -1,116 +1,67 @@
-console.log("XAUUSD Backtester Loaded");
+const chart = document.getElementById("chart");
 
-// ====== STATE ======
-let balance = 1000;
-let trades = [];
-let position = null;
+const candles = [
+  { open: 100, high: 130, low: 90, close: 120 },
+  { open: 120, high: 140, low: 110, close: 100 },
+  { open: 100, high: 150, low: 95, close: 140 },
+  { open: 140, high: 145, low: 105, close: 110 },
+  { open: 110, high: 180, low: 100, close: 170 }
+];
 
-// Dummy price (replace with real chart feed later)
-let price = 2000;
+let currentCandle = 1;
 
-// ====== ELEMENTS ======
-const balanceEl = document.getElementById("balance");
-const logEl = document.getElementById("tradeLog");
+function drawChart() {
 
-// ====== INIT ======
-function init() {
-    console.log("Backtester engine starting...");
-    updateUI();
+  chart.innerHTML = "";
+
+  const wrapper = document.createElement("div");
+
+  wrapper.style.display = "flex";
+  wrapper.style.alignItems = "flex-end";
+  wrapper.style.height = "100%";
+  wrapper.style.gap = "20px";
+  wrapper.style.padding = "20px";
+
+  for (let i = 0; i < currentCandle; i++) {
+
+    const c = candles[i];
+
+    const candle = document.createElement("div");
+    candle.style.width = "30px";
+    candle.style.height = Math.abs(c.close - c.open) + "px";
+    candle.style.background =
+      c.close > c.open ? "limegreen" : "red";
+
+    wrapper.appendChild(candle);
+  }
+
+  chart.appendChild(wrapper);
+
+  document.getElementById(
+    "candleNumber"
+  ).textContent = currentCandle;
 }
 
-init();
+document
+.getElementById("nextBtn")
+.addEventListener("click", () => {
 
-// ====== TRADE FUNCTIONS ======
-function openTrade(type, lot, sl, tp) {
-    if (position) {
-        console.log("Already in trade!");
-        return;
-    }
+  if (currentCandle < candles.length) {
+    currentCandle++;
+    drawChart();
+  }
 
-    position = {
-        type,
-        entry: price,
-        lot,
-        sl,
-        tp
-    };
+});
 
-    console.log("Trade opened:", position);
-}
+document
+.getElementById("prevBtn")
+.addEventListener("click", () => {
 
-function closeTrade(reason) {
-    if (!position) return;
+  if (currentCandle > 1) {
+    currentCandle--;
+    drawChart();
+  }
 
-    let pnl = 0;
+});
 
-    if (position.type === "buy") {
-        pnl = (price - position.entry) * position.lot;
-    } else {
-        pnl = (position.entry - price) * position.lot;
-    }
-
-    balance += pnl;
-
-    trades.push({
-        ...position,
-        exit: price,
-        pnl,
-        reason
-    });
-
-    console.log("Trade closed:", pnl, reason);
-
-    position = null;
-    updateUI();
-}
-
-// ====== PRICE SIMULATION ======
-function tick(newPrice) {
-    price = newPrice;
-
-    if (!position) return;
-
-    // SL / TP check
-    if (position.type === "buy") {
-        if (price <= position.sl) closeTrade("SL HIT");
-        if (price >= position.tp) closeTrade("TP HIT");
-    }
-
-    if (position.type === "sell") {
-        if (price >= position.sl) closeTrade("SL HIT");
-        if (price <= position.tp) closeTrade("TP HIT");
-    }
-
-    updateUI();
-}
-
-// ====== UI ======
-function updateUI() {
-    if (balanceEl) balanceEl.innerText = balance.toFixed(2);
-
-    if (logEl) {
-        logEl.innerHTML = trades
-            .slice(-10)
-            .reverse()
-            .map(t =>
-                `<div>
-                    ${t.type.toUpperCase()} | Entry: ${t.entry} | Exit: ${t.exit} | PnL: ${t.pnl.toFixed(2)}
-                </div>`
-            )
-            .join("");
-    }
-}
-
-// ====== BUTTON TESTS ======
-// Call from HTML buttons
-window.buy = function () {
-    openTrade("buy", 1, price - 5, price + 10);
-};
-
-window.sell = function () {
-    openTrade("sell", 1, price + 5, price - 10);
-};
-
-window.nextPrice = function (p) {
-    tick(p);
-};
+drawChart();
