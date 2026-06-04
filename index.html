@@ -4,7 +4,49 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>XAUUSD Backtester</title>
-<link rel="stylesheet" href="style.css">
+
+<style>
+body{
+  background:#111;
+  color:white;
+  font-family:Arial,sans-serif;
+  margin:0;
+  padding:20px;
+}
+
+header{
+  text-align:center;
+}
+
+#chart{
+  height:250px;
+  border:1px solid #444;
+  margin-top:20px;
+  overflow-x:auto;
+}
+
+.controls{
+  margin-top:20px;
+}
+
+button{
+  margin:4px;
+  padding:8px 12px;
+}
+
+.stats{
+  margin-top:20px;
+  padding:10px;
+  border:1px solid #444;
+}
+
+#tradeLog{
+  margin-top:20px;
+  padding:10px;
+  border:1px solid #444;
+}
+</style>
+
 </head>
 
 <body>
@@ -20,42 +62,77 @@ Loading...
 </div>
 
 <div class="controls">
+
 <button id="prevBtn">◀ Previous</button>
+
 <button id="playBtn">▶ Play</button>
+
 <button id="pauseBtn">⏸ Pause</button>
+
 <button id="speed1Btn">1x</button>
+
 <button id="speed2Btn">2x</button>
+
 <button id="speed5Btn">5x</button>
+
 <button id="nextBtn">Next ▶</button>
+
 <button id="longBtn">📈 Long</button>
+
 <button id="shortBtn">📉 Short</button>
+
 </div>
 
 <div class="stats">
+
 <h2>Replay Info</h2>
-<p>Current Candle:
+
+<p>
+Current Candle:
 <span id="candleNumber">0</span>
 </p>
+
 </div>
 
 <div class="stats">
+
 <h2>Performance</h2>
 
-<p>Total Trades:
+<p>
+Total Trades:
 <span id="totalTrades">0</span>
 </p>
 
-<p>Win Rate:
+<p>
+Wins:
+<span id="wins">0</span>
+</p>
+
+<p>
+Losses:
+<span id="losses">0</span>
+</p>
+
+<p>
+Win Rate:
 <span id="winRate">0%</span>
 </p>
 
-<p>Best Day:
+<p>
+Best Day:
 <span id="bestDay">-</span>
 </p>
 
-<p>Worst Day:
+<p>
+Worst Day:
 <span id="worstDay">-</span>
 </p>
+
+</div>
+
+<div id="tradeLog">
+
+<h2>Trade Log</h2>
 
 </div>
 
