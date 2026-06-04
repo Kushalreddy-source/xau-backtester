@@ -17,11 +17,92 @@ let replaySpeed = 1000;
 
 let tradeMode = null;
 
+const trades = [];
+
+function updateStats() {
+
+  const totalTradesElement =
+    document.getElementById("totalTrades");
+
+  if(totalTradesElement){
+    totalTradesElement.textContent =
+      trades.length;
+  }
+
+  let tradeLog =
+    document.getElementById("tradeLog");
+
+  if(!tradeLog){
+
+    tradeLog =
+      document.createElement("div");
+
+    tradeLog.id = "tradeLog";
+
+    tradeLog.style.marginTop = "20px";
+    tradeLog.style.padding = "10px";
+    tradeLog.style.border =
+      "1px solid #555";
+
+    document
+      .querySelector(".container")
+      .appendChild(tradeLog);
+  }
+
+  tradeLog.innerHTML =
+    "<h2>Trade Log</h2>";
+
+  trades.forEach((trade,index)=>{
+
+    const row =
+      document.createElement("p");
+
+    row.textContent =
+      (index + 1) +
+      ". " +
+      trade.type.toUpperCase() +
+      " | Candle " +
+      trade.candle +
+      " | SL " +
+      trade.sl +
+      " | TP " +
+      trade.tp;
+
+    tradeLog.appendChild(row);
+  });
+
+}
+
+function saveTrade(type,candleIndex){
+
+  const sl =
+    prompt("Enter Stop Loss");
+
+  if(sl === null) return;
+
+  const tp =
+    prompt("Enter Take Profit");
+
+  if(tp === null) return;
+
+  trades.push({
+    type:type,
+    candle:candleIndex + 1,
+    sl:sl,
+    tp:tp
+  });
+
+  updateStats();
+
+  alert("Trade Saved");
+}
+
 function drawChart(){
 
   chart.innerHTML = "";
 
-  const wrapper = document.createElement("div");
+  const wrapper =
+    document.createElement("div");
 
   wrapper.style.display = "flex";
   wrapper.style.alignItems = "flex-end";
@@ -37,27 +118,37 @@ function drawChart(){
     const candle =
       document.createElement("div");
 
-    candle.style.position = "relative";
-    candle.style.width = "24px";
-    candle.style.height = "180px";
-    candle.style.cursor = "pointer";
+    candle.style.position =
+      "relative";
 
-    candle.dataset.index = i;
+    candle.style.width =
+      "24px";
+
+    candle.style.height =
+      "180px";
+
+    candle.style.cursor =
+      "pointer";
 
     const wick =
       document.createElement("div");
 
-    wick.style.position = "absolute";
+    wick.style.position =
+      "absolute";
+
     wick.style.left = "10px";
     wick.style.bottom = "20px";
     wick.style.width = "3px";
     wick.style.height = "120px";
-    wick.style.background = "white";
+    wick.style.background =
+      "white";
 
     const body =
       document.createElement("div");
 
-    body.style.position = "absolute";
+    body.style.position =
+      "absolute";
+
     body.style.left = "2px";
     body.style.bottom = "55px";
     body.style.width = "20px";
@@ -74,17 +165,23 @@ function drawChart(){
     candle.onclick = function(){
 
       if(tradeMode === "long"){
-        alert(
-          "LONG selected on candle "
-          + (i + 1)
+
+        saveTrade(
+          "long",
+          i
         );
+
+        tradeMode = null;
       }
 
       if(tradeMode === "short"){
-        alert(
-          "SHORT selected on candle "
-          + (i + 1)
+
+        saveTrade(
+          "short",
+          i
         );
+
+        tradeMode = null;
       }
 
     };
@@ -96,24 +193,34 @@ function drawChart(){
 
   document.getElementById(
     "candleNumber"
-  ).textContent = currentCandle;
+  ).textContent =
+    currentCandle;
 }
 
 function startReplay(){
 
-  clearInterval(replayTimer);
+  clearInterval(
+    replayTimer
+  );
 
-  replayTimer = setInterval(()=>{
+  replayTimer =
+    setInterval(()=>{
 
-    currentCandle++;
+      currentCandle++;
 
-    drawChart();
+      drawChart();
 
-    if(currentCandle >= candles.length){
-      clearInterval(replayTimer);
-    }
+      if(
+        currentCandle >=
+        candles.length
+      ){
 
-  }, replaySpeed);
+        clearInterval(
+          replayTimer
+        );
+      }
+
+    },replaySpeed);
 }
 
 document.getElementById(
@@ -123,15 +230,24 @@ document.getElementById(
 document.getElementById(
   "pauseBtn"
 ).onclick = function(){
-  clearInterval(replayTimer);
+
+  clearInterval(
+    replayTimer
+  );
+
 };
 
 document.getElementById(
   "nextBtn"
 ).onclick = function(){
 
-  if(currentCandle < candles.length){
+  if(
+    currentCandle <
+    candles.length
+  ){
+
     currentCandle++;
+
     drawChart();
   }
 
@@ -141,8 +257,12 @@ document.getElementById(
   "prevBtn"
 ).onclick = function(){
 
-  if(currentCandle > 1){
+  if(
+    currentCandle > 1
+  ){
+
     currentCandle--;
+
     drawChart();
   }
 
@@ -151,19 +271,25 @@ document.getElementById(
 document.getElementById(
   "speed1Btn"
 ).onclick = function(){
+
   replaySpeed = 1000;
+
 };
 
 document.getElementById(
   "speed2Btn"
 ).onclick = function(){
+
   replaySpeed = 500;
+
 };
 
 document.getElementById(
   "speed5Btn"
 ).onclick = function(){
+
   replaySpeed = 200;
+
 };
 
 document.getElementById(
@@ -191,3 +317,4 @@ document.getElementById(
 };
 
 drawChart();
+updateStats();
