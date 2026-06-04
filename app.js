@@ -1,13 +1,11 @@
 const chart = document.getElementById("chart");
 
 const candles = [
-  { open: 100, high: 130, low: 90, close: 120 },
-  { open: 120, high: 140, low: 110, close: 100 },
-  { open: 100, high: 150, low: 95, close: 140 },
-  { open: 140, high: 145, low: 105, close: 110 },
-  { open: 110, high: 180, low: 100, close: 170 },
-  { open: 170, high: 190, low: 150, close: 160 },
-  { open: 160, high: 210, low: 155, close: 200 }
+  { open: 50, high: 90, low: 30, close: 80 },
+  { open: 80, high: 100, low: 40, close: 50 },
+  { open: 50, high: 120, low: 45, close: 100 },
+  { open: 100, high: 110, low: 60, close: 70 },
+  { open: 70, high: 140, low: 50, close: 130 }
 ];
 
 let currentCandle = 1;
@@ -17,83 +15,67 @@ function drawChart() {
   chart.innerHTML = "";
 
   const wrapper = document.createElement("div");
-
   wrapper.style.display = "flex";
   wrapper.style.alignItems = "flex-end";
   wrapper.style.height = "100%";
-  wrapper.style.gap = "15px";
   wrapper.style.padding = "20px";
+  wrapper.style.gap = "20px";
 
-  for (let i = 0; i < currentCandle; i++) {
+  for(let i = 0; i < currentCandle; i++) {
 
     const c = candles[i];
 
-    const candleContainer =
-      document.createElement("div");
+    const container = document.createElement("div");
+    container.style.position = "relative";
+    container.style.width = "30px";
+    container.style.height = "180px";
 
-    candleContainer.style.position = "relative";
-    candleContainer.style.width = "30px";
-    candleContainer.style.height = "220px";
-
-    const wick =
-      document.createElement("div");
-
+    const wick = document.createElement("div");
     wick.style.position = "absolute";
     wick.style.left = "13px";
-    wick.style.bottom = c.low + "px";
+    wick.style.bottom = "20px";
     wick.style.width = "4px";
-    wick.style.height =
-      (c.high - c.low) + "px";
+    wick.style.height = "120px";
     wick.style.background = "white";
 
-    const body =
-      document.createElement("div");
-
+    const body = document.createElement("div");
     body.style.position = "absolute";
     body.style.left = "3px";
-
-    body.style.bottom =
-      Math.min(c.open, c.close) + "px";
-
     body.style.width = "24px";
-
-    body.style.height =
-      Math.abs(c.close - c.open) + "px";
+    body.style.height = "50px";
+    body.style.bottom = "55px";
 
     body.style.background =
       c.close > c.open
-        ? "limegreen"
-        : "red";
+      ? "limegreen"
+      : "red";
 
-    candleContainer.appendChild(wick);
-    candleContainer.appendChild(body);
+    container.appendChild(wick);
+    container.appendChild(body);
 
-    wrapper.appendChild(candleContainer);
+    wrapper.appendChild(container);
   }
 
   chart.appendChild(wrapper);
 
-  document.getElementById(
-    "candleNumber"
-  ).textContent = currentCandle;
+  document.getElementById("candleNumber").textContent =
+    currentCandle;
 }
 
-document
-.getElementById("nextBtn")
+document.getElementById("nextBtn")
 .addEventListener("click", () => {
 
-  if (currentCandle < candles.length) {
+  if(currentCandle < candles.length){
     currentCandle++;
     drawChart();
   }
 
 });
 
-document
-.getElementById("prevBtn")
+document.getElementById("prevBtn")
 .addEventListener("click", () => {
 
-  if (currentCandle > 1) {
+  if(currentCandle > 1){
     currentCandle--;
     drawChart();
   }
